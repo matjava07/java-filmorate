@@ -24,26 +24,34 @@ public class UserController {
 
     @PostMapping
     public User createUser(@RequestBody @Valid User user) {
-        if (doValidate(user)) {
-            user.setId(generateId.getId());
-            users.put(user.getId(), user);
-            log.info("Пользователь " + user.getName() + " успешно добавлен");
-            return user;
+        if (user != null) {
+            if (doValidate(user)) {
+                user.setId(generateId.getId());
+                users.put(user.getId(), user);
+                log.info("Пользователь " + user.getName() + " успешно добавлен");
+                return user;
+            } else {
+                throw new ValidationException("Не удалось создать пользователя");
+            }
         } else {
-            throw new ValidationException("Не удалось создать пользователя");
+            throw new ValidationException("Передано пустое значение");
         }
     }
 
     @PutMapping
     public User updateUser(@RequestBody @Valid User user) {
-        if (doValidate(user) && user.getId() > 0) {
-            if(users.containsKey(user.getId())) {
-                users.put(user.getId(), user);
+        if (user != null) {
+            if (doValidate(user) && user.getId() > 0) {
+                if (users.containsKey(user.getId())) {
+                    users.put(user.getId(), user);
+                }
+                log.info("Пользователь " + user.getName() + " успешно обновлен");
+                return user;
+            } else {
+                throw new ValidationException("Не удалось обновить пользователя");
             }
-            log.info("Пользователь " + user.getName() + " успешно обновлен");
-            return user;
         } else {
-            throw new ValidationException("Не удалось обновить пользователя");
+            throw new ValidationException("Передано пустое значение");
         }
     }
 
