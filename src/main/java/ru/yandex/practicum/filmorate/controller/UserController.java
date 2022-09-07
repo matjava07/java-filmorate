@@ -83,7 +83,7 @@ public class UserController {
 
     private Boolean doValidate(User user) {
         if (!user.getLogin().contains(" ")) {
-            if (user.getName().isBlank()) {
+            if (user.getName() == null || user.getName().isBlank()) {
                 user.setName(user.getLogin());
             }
             return true;
