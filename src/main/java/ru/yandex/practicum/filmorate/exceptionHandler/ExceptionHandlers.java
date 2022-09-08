@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
+import ru.yandex.practicum.filmorate.exception.ObjectExistenceException;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
 
@@ -20,7 +20,7 @@ public class ExceptionHandlers {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> exc(ObjectExcistenceException ex) {
+    public ResponseEntity<String> exc(ObjectExistenceException ex) {
         log.info("Код ошибки: 404");
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }

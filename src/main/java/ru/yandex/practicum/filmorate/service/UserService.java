@@ -2,12 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
+import ru.yandex.practicum.filmorate.exception.ObjectExistenceException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.storageUser.UserStorage;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +32,7 @@ public class UserService {
 
     public User getUserById(Integer userId) {
         return userStorage.getUserById(userId)
-                .orElseThrow(() -> new ObjectExcistenceException("Пользователь не существует"));
+                .orElseThrow(() -> new ObjectExistenceException("Пользователь не существует"));
     }
 
     public void addFriend(Integer userId, Integer friendId) {

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.storageFilm;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
