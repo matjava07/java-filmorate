@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ObjectExistenceException;
+import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
@@ -38,7 +38,7 @@ public class UserController {
             }
             return null;
         } else {
-            throw new ObjectExistenceException("Пользователь не существует.");
+            throw new ObjectExcistenceException("Пользователь не существует.");
         }
     }
 
@@ -83,7 +83,7 @@ public class UserController {
 
     private Boolean doValidate(User user) {
         if (!user.getLogin().contains(" ")) {
-            if (user.getName() == null || user.getName().isBlank()) {
+            if (user.getName().isBlank()) {
                 user.setName(user.getLogin());
             }
             return true;

@@ -1,81 +1,91 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.generate.GenerateId;
+import ru.yandex.practicum.filmorate.characteristicsForFilm.Mpa;
+import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.storageFilm.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.storageUser.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.dao.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 
-	InMemoryFilmStorage filmController;
-	GenerateId generateId;
-	InMemoryUserStorage userController;
 
-	@BeforeEach
-	public void main() {
-		generateId = new GenerateId();
-		filmController = new InMemoryFilmStorage(generateId);
-		userController = new InMemoryUserStorage(generateId);
+	private final UserDbStorage userDbStorage;
+	private final FilmDbStorage filmDbStorage;
+
+	@Test
+	public void testGetUsers() {
+		User user = new User(1, "ghbgh@mail.ru",
+				"ffff", "ffff", LocalDate.of(2015, 12, 11));
+
+		List<User> users = new ArrayList<>();
+		users.add(user);
+
+		userDbStorage.createUser(user);
+		assertEquals(users, userDbStorage.getUsers());
 	}
 
 	@Test
-	void createFilmTest() {
-		Film film = new Film(1, "Фильм", "о жизни домашних животных",
-				LocalDate.of(2022, 1, 13), 20, 0, new ArrayList<>());
-		assertEquals(filmController.createFilm(film), film, "Фильмы не равны");
+	public void testUpdateFilm() {
+		Mpa mpa = new Mpa(1, "G");
+		Film film = new Film(1, "hgbg",
+				"ghbghb", LocalDate.of(2010, 1, 1), 120, mpa);
+
+		filmDbStorage.createFilm(film);
+
+		Film newFilm = new Film(1, "fffff",
+				"fffff", LocalDate.of(2010, 1, 1), 120, mpa);
+
+		filmDbStorage.updateFilm(newFilm);
+
+		assertEquals(newFilm, filmDbStorage.getFilmById(1)
+				.orElseThrow(() -> new ObjectExcistenceException("-")));
 	}
 
 	@Test
-	void updateFilmWithGoodId() {
-		Film film = new Film(1, "Фильм", "о жизни домашних животных",
-				LocalDate.of(2022, 1, 13), 20, 0, new ArrayList<>());
+	public void testGetFilmById() {
+		Mpa mpa = new Mpa(1, "G");
+		Film newFilm = new Film(1, "hgbg",
+				"ghbghb", LocalDate.of(2010, 1, 1), 120, mpa);
 
-		filmController.createFilm(film);
+		filmDbStorage.createFilm(newFilm);
 
-		List<Film> filmsBefore = filmController.getFilms();
-
-		Film filmNew = new Film(1, "Фильм", "о жизни домашних животных",
-				LocalDate.of(2000, 1, 13), 120, 0, new ArrayList<>());
-
-		filmController.updateFilm(filmNew);
-
-		assertNotEquals(filmController.getFilms(), filmsBefore, "Фильм не обновился");
+		Optional<Film> filmOptional = filmDbStorage.getFilmById(1);
+		assertThat(filmOptional)
+				.isPresent()
+				.hasValueSatisfying(film ->
+						assertThat(film).hasFieldOrPropertyWithValue("id", 1)
+				);
 	}
 
 	@Test
-	void createUserTest() {
-		User user = new User(1, "сhikibambony@yandex.ru", "сhikibambony", "Матвей",
-				LocalDate.of(2001, 5, 27), new ArrayList<>());
-		assertEquals(userController.createUser(user), user, "Пользователи не равны");
+	public void testGetFilms() {
+
+		Mpa mpa = new Mpa(1, "G");
+		Film newFilm = new Film(1, "hgbg",
+				"ghbghb", LocalDate.of(2010, 1, 1), 120, mpa);
+
+		filmDbStorage.createFilm(newFilm);
+
+		List<Film> films = new ArrayList<>();
+		films.add(newFilm);
+
+		assertEquals(films, filmDbStorage.getFilms());
 	}
-
-	@Test
-	void updateUserWithGoodId() {
-		User user = new User(1, "сhikibambony@yandex.ru", "сhikibambony", "Матвей",
-				LocalDate.of(2001, 5, 27), new ArrayList<>());
-
-		userController.createUser(user);
-
-		List<User> usersBefore = userController.getUsers();
-
-		User userNew = new User(1, "сhikibambony@yandex.ru", "сhikibambony", "Матвей Викторович",
-				LocalDate.of(2001, 5, 27), new ArrayList<>());
-
-		userController.updateUser(userNew);
-
-		assertNotEquals(userController.getUsers(), usersBefore, "Пользователь не обновился");
-	}
-
 }
