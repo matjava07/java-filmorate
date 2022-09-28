@@ -5,19 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Genre;
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Mpa;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.dal.FilmStorage;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.sql.*;
+import java.sql.Date;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,19 +31,10 @@ public class FilmDbStorage implements FilmStorage {
         String sql =
                 "insert into FILMS (TITLE, DESCRIPTION, RELEASE_DATE, DURATION, MOTION_PICTURE_ASSOCIATION_ID) " +
                         "values(?, ?, ?, ?, ?)";
-
-        jdbcTemplate.update(sql,
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration(),
-                film.getMpa().getId());
-
-        String sqlForFilm = "select count(*) from FILMS";
-        film.setId(jdbcTemplate.queryForObject(sqlForFilm, Integer.class));
-
+        Integer id = (int) insertFilm(film, sql);
+        film.setId(id);
+        film.setGenres(deleteDublicateGenre(film));
         insertFilmGenre(film);
-
         return film;
     }
 
@@ -66,13 +56,11 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId());
 
-        if (getGenreFilmsByFilmId(film.getId())) {
-            String sqlForUpdateGenre = "delete from FILM_GENRE where FILM_ID = ?";
-            jdbcTemplate.update(sqlForUpdateGenre, film.getId());
-            insertFilmGenre(film);
-        } else {
-            insertFilmGenre(film);
-        }
+
+        String sqlForUpdateGenre = "delete from FILM_GENRE where FILM_ID = ?";
+        jdbcTemplate.update(sqlForUpdateGenre, film.getId());
+        film.setGenres(deleteDublicateGenre(film));
+        insertFilmGenre(film);
 
         return getFilmById(film.getId()).orElseThrow(() -> new ObjectExcistenceException("Фильм не найден"));
     }
@@ -87,12 +75,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getFilmById(Integer filmId) {
-        String sql = "select * " +
-                "from FILMS F " +
-                "join MOTION_PICTURE_ASSOCIATION M on F.MOTION_PICTURE_ASSOCIATION_ID = M.MPA_ID " +
-                "where film_id = ?";
+        String sql =
+                "select * " +
+                        "from FILMS F " +
+                        "join MOTION_PICTURE_ASSOCIATION MPA on MPA.MPA_ID = F.MOTION_PICTURE_ASSOCIATION_ID " +
+                        "where F.FILM_ID = ?";
 
-        List<Film> films =  jdbcTemplate.query(sql, FilmDbStorage::makeFilm, filmId);
+        List<Film> films = jdbcTemplate.query(sql, FilmDbStorage::makeFilm, filmId);
+
         if (films.size() != 1) {
             return Optional.empty();
         }
@@ -100,12 +90,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopTenFilms(Integer numberForTop) {
+    public List<Film> getTopFilms(Integer numberForTop) {
         String sql = "select * " +
                 "from films " +
                 "join MOTION_PICTURE_ASSOCIATION MPA on MPA.MPA_ID = FILMS.MOTION_PICTURE_ASSOCIATION_ID " +
                 "order by rate desc " +
-                "limit ?" ;
+                "limit ?";
 
         return jdbcTemplate.query(sql, FilmDbStorage::makeFilm, numberForTop);
     }
@@ -121,23 +111,47 @@ public class FilmDbStorage implements FilmStorage {
 
     private void insertFilmGenre(Film film) {
         String sqlForGenre = "insert into FILM_GENRE(film_id, genre_id) values (?, ?)";
+
         jdbcTemplate.batchUpdate(sqlForGenre, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(@NotNull PreparedStatement ps, int i) throws SQLException {
-                Genre genre = film.getGenres().get(i);
+                Genre genre = new ArrayList<>(film.getGenres()).get(i);
                 ps.setLong(1, film.getId());
                 ps.setLong(2, genre.getId());
             }
 
             @Override
             public int getBatchSize() {
-                return new HashSet<>(film.getGenres()).size();
+                return film.getGenres().size();
             }
         });
     }
 
-    private Boolean getGenreFilmsByFilmId(Integer filmId) {
-        String sql = "select FILM_ID from FILM_GENRE where FILM_ID = " + filmId;
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("film_id")).contains(filmId);
+    private long insertFilm(Film film, String sql) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection
+                    .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, film.getName());
+            ps.setString(2, film.getDescription());
+            ps.setDate(3, Date.valueOf(film.getReleaseDate()));
+            ps.setLong(4, film.getDuration());
+            ps.setInt(5, film.getMpa().getId());
+            return ps;
+        }, keyHolder);
+
+        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+    }
+
+    private List<Genre> deleteDublicateGenre(Film film) {
+        List<Genre> genres = new ArrayList<>();
+        for (Genre newGenre: film.getGenres()){
+            if (!genres.contains(newGenre)){
+                genres.add(newGenre);
+            }
+        }
+        return genres;
     }
 }
+

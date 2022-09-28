@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.characteristicsForFilm;
+package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

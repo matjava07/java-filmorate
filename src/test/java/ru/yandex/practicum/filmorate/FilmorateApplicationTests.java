@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Mpa;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.dal.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dao.UserDbStorage;
 
@@ -26,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FilmorateApplicationTests {
 
 
-	private final UserDbStorage userDbStorage;
-	private final FilmDbStorage filmDbStorage;
+	private final UserStorage userDbStorage;
+	private final FilmStorage filmDbStorage;
 
 	@Test
 	public void testGetUsers() {

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dal;
 
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Genre;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;

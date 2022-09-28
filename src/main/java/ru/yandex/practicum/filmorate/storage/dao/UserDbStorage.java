@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dal.UserStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,20 +19,15 @@ import java.util.Optional;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     @Override
     public User createUser(User user) {
         String sql =
-        "insert into USERS (EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
-                "values (?, ?, ?, ?)";
+                "insert into USERS (EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
+                        "values (?, ?, ?, ?)";
 
-        jdbcTemplate.update(sql,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday());
-
-        String sqlForUser = "select count(*) from USERS";
-        user.setId(jdbcTemplate.queryForObject(sqlForUser, Integer.class));
+        int id = (int) insertUser(user, sql);
+        user.setId(id);
 
         return user;
     }
@@ -55,7 +51,7 @@ public class UserDbStorage implements UserStorage {
     public List<User> getUsers() {
         String sql =
                 "select * " +
-                "from USERS";
+                        "from USERS";
         return jdbcTemplate.query(sql, UserDbStorage::makeUser);
     }
 
@@ -80,5 +76,20 @@ public class UserDbStorage implements UserStorage {
                 rs.getString("user_name"),
                 rs.getDate("birthday").toLocalDate()
         );
+    }
+
+    private long insertUser(User user, String sql) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection
+                    .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, user.getEmail());
+            ps.setString(2, user.getLogin());
+            ps.setString(3, user.getName());
+            ps.setDate(4, Date.valueOf(user.getBirthday()));
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey().longValue();
     }
 }

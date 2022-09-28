@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dal;
 
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Mpa;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 import java.util.Optional;

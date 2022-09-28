@@ -75,9 +75,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopTenFilms(@Positive @RequestParam(required = false, defaultValue = "10") Integer count) {
+    public List<Film> getTopFilms(@Positive @RequestParam(required = false, defaultValue = "10") Integer count) {
         log.info("Топ " + count + " лучших фильмов");
-        return filmService.getTopTenFilms(count);
+        return filmService.getTopFilms(count);
     }
 
     private Boolean doValidation(LocalDate dateFilm) {

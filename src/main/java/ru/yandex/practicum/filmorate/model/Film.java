@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Genre;
-import ru.yandex.practicum.filmorate.characteristicsForFilm.Mpa;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -39,7 +37,6 @@ public class Film {
 
     private List<Genre> genres = new ArrayList<>();
 
-    @NotNull
     private Mpa mpa;
 
     public Film(int film_id,
@@ -47,7 +44,7 @@ public class Film {
                 @Size(max = 200) String description,
                 @NotNull LocalDate release_date,
                 @Positive int duration,
-                @NotNull Mpa mpa) {
+                Mpa mpa) {
         this.id = film_id;
         this.name = title;
         this.description = description;

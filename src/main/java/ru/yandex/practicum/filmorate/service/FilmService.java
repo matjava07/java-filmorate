@@ -62,7 +62,7 @@ public class FilmService {
         }
     }
 
-    public List<Film> getTopTenFilms(Integer numberForTop) {
-        return filmDbStorage.getTopTenFilms(numberForTop);
+    public List<Film> getTopFilms(Integer numberForTop) {
+        return filmDbStorage.getTopFilms(numberForTop);
     }
 }
