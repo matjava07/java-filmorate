@@ -5,7 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,15 +35,23 @@ public class Film {
     @Min(0)
     private Integer countLikes = 0;
 
-    private List<Integer> usersWhichLikeFilm = new ArrayList<>();
+    private List<Genre> genres = new ArrayList<>();
 
-    public void addLikes(Integer idUser) {
-        countLikes++;
-        usersWhichLikeFilm.add(idUser);
-    }
+    private Mpa mpa;
 
-    public void deleteLikes(Integer idUser) {
-        countLikes--;
-        usersWhichLikeFilm.remove(idUser);
+    public Film(int film_id,
+                @NotBlank String title,
+                @Size(max = 200) String description,
+                @NotNull LocalDate release_date,
+                @Positive int duration,
+                Mpa mpa,
+                @Min(0) int countLikes) {
+        this.id = film_id;
+        this.name = title;
+        this.description = description;
+        this.releaseDate = release_date;
+        this.duration = duration;
+        this.mpa = mpa;
+        this.countLikes = countLikes;
     }
 }

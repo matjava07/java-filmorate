@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ObjectExistenceException;
+import ru.yandex.practicum.filmorate.exception.ObjectExcistenceException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
@@ -26,7 +26,7 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@RequestBody @Valid Film film) {
-        if (doValidateGoodDate(film.getReleaseDate())) {
+        if (doValidation(film.getReleaseDate())) {
             log.info("Добавление фильма");
             return filmService.createFilm(film);
         }
@@ -35,8 +35,8 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@RequestBody @Valid Film film) {
-        if (doValidateUserId(film.getId())) {
-            if (doValidateGoodDate(film.getReleaseDate())) {
+        if (doValidate(film.getId())) {
+            if (doValidation(film.getReleaseDate())) {
                 log.info("Обновление данных о фильме");
                 return filmService.updateFilm(film);
             }
@@ -59,7 +59,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void addLikeToFilm(@PathVariable("userId") Integer userId,
                               @PathVariable("id") Integer filmId) {
-        if (doValidateUserId(userId)) {
+        if (doValidate(userId)) {
             log.info("Пользователь с id = " + userId + " поставил лайк фильму с id = " + filmId);
             filmService.addLikeToFilm(userId, filmId);
         }
@@ -68,19 +68,19 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLikeToFilm(@PathVariable("userId") Integer userId,
                                  @PathVariable("id") Integer filmId) {
-        if (doValidateUserId(userId)) {
+        if (doValidate(userId)) {
             log.info("Пользователь с id = " + userId + " убрал лайк с фильма с id = " + filmId);
             filmService.deleteLikeToFilm(userId, filmId);
         }
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopTenFilms(@Positive @RequestParam(required = false, defaultValue = "10") Integer count) {
+    public List<Film> getTopFilms(@Positive @RequestParam(required = false, defaultValue = "10") Integer count) {
         log.info("Топ " + count + " лучших фильмов");
-        return filmService.getTopTenFilms(count);
+        return filmService.getTopFilms(count);
     }
 
-    private Boolean doValidateGoodDate(LocalDate dateFilm) {
+    private Boolean doValidation(LocalDate dateFilm) {
         if (!dateFilm.isBefore(START_DATA_FILM)) {
             return true;
         } else {
@@ -88,10 +88,10 @@ public class FilmController {
         }
     }
 
-    private Boolean doValidateUserId(Integer userId) {
+    private Boolean doValidate(Integer userId) {
         if (userId != null && userId > 0) {
             return true;
         }
-        throw new ObjectExistenceException("Ошибка существования объекта");
+        throw new ObjectExcistenceException("Ошибка существования объекта");
     }
 }
