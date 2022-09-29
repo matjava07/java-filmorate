@@ -106,7 +106,8 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getString("description"),
                 rs.getDate("release_date").toLocalDate(),
                 rs.getInt("duration"),
-                new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
+                new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")),
+                rs.getInt("rate"));
     }
 
     private void insertFilmGenre(Film film) {

@@ -44,12 +44,14 @@ public class Film {
                 @Size(max = 200) String description,
                 @NotNull LocalDate release_date,
                 @Positive int duration,
-                Mpa mpa) {
+                Mpa mpa,
+                @Min(0) int countLikes) {
         this.id = film_id;
         this.name = title;
         this.description = description;
         this.releaseDate = release_date;
         this.duration = duration;
         this.mpa = mpa;
+        this.countLikes = countLikes;
     }
 }
